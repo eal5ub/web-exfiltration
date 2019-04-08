@@ -1,0 +1,3 @@
+[submodule "static/vendor/semantic"]
+	path = static/vendor/semantic
+	url = https://github.com/Semantic-Org/Semantic-UI.git

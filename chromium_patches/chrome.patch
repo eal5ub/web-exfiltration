@@ -1,0 +1,37 @@
+From f6454e34f7f0505cd3b5073e792d0f9953bb5d4d Mon Sep 17 00:00:00 2001
+From: Ethan Lowman <ethan.l.527@gmail.com>
+Date: Sun, 25 Mar 2018 05:38:46 -0400
+Subject: [PATCH] Disable dev mode bubble and Google API keys warning
+
+---
+ chrome/browser/extensions/dev_mode_bubble_delegate.cc         | 1 +
+ chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/chrome/browser/extensions/dev_mode_bubble_delegate.cc b/chrome/browser/extensions/dev_mode_bubble_delegate.cc
+index 608d200..cba4f9f 100644
+--- a/chrome/browser/extensions/dev_mode_bubble_delegate.cc
++++ b/chrome/browser/extensions/dev_mode_bubble_delegate.cc
+@@ -86,6 +86,7 @@ bool DevModeBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
+ 
+ bool DevModeBubbleDelegate::ShouldShow(
+     const ExtensionIdList& extensions) const {
++  return false;
+   DCHECK_LE(1u, extensions.size());
+   return !g_shown.Get().count(profile_);
+ }
+diff --git a/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc b/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
+index 6bbd882..f93b092 100644
+--- a/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
++++ b/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
+@@ -15,6 +15,7 @@
+ 
+ // static
+ void GoogleApiKeysInfoBarDelegate::Create(InfoBarService* infobar_service) {
++  return;
+   if (google_apis::HasKeysConfigured())
+     return;
+ 
+-- 
+2.7.1
+

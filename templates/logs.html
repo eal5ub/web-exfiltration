@@ -1,0 +1,77 @@
+{{define "head"}}
+<script type="text/javascript">
+  $(function(){
+    $(".ui.accordion").accordion();
+  });
+</script>
+{{end}}
+
+{{define "content"}}
+<h2>Event Log</h2>
+
+<div class="ui blue segment">
+  {{$netEvents := .ChromeClient.NetworkRequestWillBeSentLogs .PolicyId}}
+  {{if len $netEvents}}
+    <h5>Page: {{(index $netEvents 0).DocumentURL}}</h5>
+  {{else}}
+    <h5>Page: {{.PolicyId}}</h5>
+  {{end}}
+
+
+  <div class="ui styled fluid accordion">
+    <div class="title">
+      <i class="dropdown icon"></i>
+      Event: NetworkRequestIntercepted
+    </div>
+    <div class="content">
+      <table class="ui celled striped table">
+        <tbody>
+          {{range $index, $event := .ChromeClient.NetworkRequestInterceptedLogs .PolicyId}}
+            <tr class="top aligned">
+              <td>{{$index}}</td>
+              <td><pre>{{json $event}}</pre></td>
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="title">
+      <i class="dropdown icon"></i>
+      Event: NetworkRequestWillBeSent
+    </div>
+    <div class="content">
+      <table class="ui celled striped table">
+        <tbody>
+          {{range $index, $event := .ChromeClient.NetworkRequestWillBeSentLogs .PolicyId}}
+            <tr class="top aligned">
+              <td>{{$index}}</td>
+              <td><pre>{{json $event}}</pre></td>
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="title">
+      <i class="dropdown icon"></i>
+      Event: APIAccess
+    </div>
+    <div class="content">
+      <table class="ui celled striped table">
+        <tbody>
+          {{range $index, $event := .ChromeClient.APIAccessLogs .PolicyId}}
+            <tr class="top aligned">
+              <td>{{$index}}</td>
+              <td><pre>{{json $event}}</pre></td>
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{{end}}

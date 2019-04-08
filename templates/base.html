@@ -1,0 +1,24 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exfiltration Protection Study</title>
+  <link rel="stylesheet" href="/static/vendor/semantic/dist/semantic.min.css">
+  <script src="/static/vendor/jquery-3.3.1.min.js"></script>
+  <script src="/static/vendor/semantic/dist/semantic.min.js"></script>
+  <style type="text/css">
+    body > .ui.container {
+      margin-top: 2em;
+      margin-bottom: 2em;
+    }
+  </style>
+  {{template "head" .}}
+</head>
+<body>
+  <div class="ui container">
+    {{template "content" .}}
+  </div>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,90 @@
+From 425873c996d2b68ffd42f5297fda7feeb4694448 Mon Sep 17 00:00:00 2001
+From: Ethan Lowman <ethan.l.527@gmail.com>
+Date: Sun, 25 Mar 2018 05:09:51 -0400
+Subject: [PATCH] Add console.stackTrace builtin
+
+---
+ src/bootstrapper.cc                 |  2 ++
+ src/builtins/builtins-console.cc    | 26 ++++++++++++++++++++++++++
+ src/builtins/builtins-definitions.h |  1 +
+ 3 files changed, 29 insertions(+)
+
+diff --git a/src/bootstrapper.cc b/src/bootstrapper.cc
+index 1b55d6f..f8e48b0 100644
+--- a/src/bootstrapper.cc
++++ b/src/bootstrapper.cc
+@@ -2849,6 +2849,8 @@ void Genesis::InitializeGlobal(Handle<JSGlobalObject> global_object,
+                           false, NONE);
+     SimpleInstallFunction(console, "context", Builtins::kConsoleContext, 1,
+                           true, NONE);
++    SimpleInstallFunction(console, "stackTrace", Builtins::kConsoleStackTrace,
++                          0, false, NONE);
+     JSObject::AddProperty(
+         console, factory->to_string_tag_symbol(),
+         factory->NewStringFromAsciiChecked("Object"),
+diff --git a/src/builtins/builtins-console.cc b/src/builtins/builtins-console.cc
+index 75ad302..8ff36f8 100644
+--- a/src/builtins/builtins-console.cc
++++ b/src/builtins/builtins-console.cc
+@@ -6,6 +6,7 @@
+ #include "src/builtins/builtins.h"
+ 
+ #include "src/api.h"
++#include "src/conversions.h"
+ #include "src/debug/interface-types.h"
+ #include "src/objects-inl.h"
+ 
+@@ -106,6 +107,29 @@ BUILTIN(ConsoleTimeStamp) {
+   return isolate->heap()->undefined_value();
+ }
+ 
++BUILTIN(ConsoleStackTrace) {
++  LogTimerEvent(isolate, args, Logger::STAMP);
++  RETURN_FAILURE_IF_SCHEDULED_EXCEPTION(isolate);
++
++  // It's possible that this frame limit could omit some stack frames, but
++  // allocating a max-sized array makes this call too slow. It needs to be fast
++  // enough to not block the UI for too long.
++  Handle<FixedArray> st = isolate->CaptureCurrentStackTrace(1000, StackTrace::kScriptId);
++  int n = st->length();
++  Handle<FixedArray> entries = isolate->factory()->NewUninitializedFixedArray(n);
++  for (int i = 0; i < n; ++i) {
++    Handle<StackFrameInfo> sf(StackFrameInfo::cast(st->get(i)));
++
++    char arr[100];
++    Vector<char> buffer(arr, arraysize(arr));
++    const char *str = IntToCString(sf->script_id(), buffer);
++    Handle<Object> obj = isolate->factory()->NewStringFromAsciiChecked(str);
++
++    entries->set(i, *obj, SKIP_WRITE_BARRIER);
++  }
++  return *isolate->factory()->NewJSArrayWithElements(entries, PACKED_ELEMENTS, n);
++}
++
+ namespace {
+ void InstallContextFunction(Handle<JSObject> target, const char* name,
+                             Builtins::Name builtin_id, int context_id,
+@@ -164,6 +188,8 @@ BUILTIN(ConsoleContext) {
+                          args.at(1));
+   InstallContextFunction(context, "timeStamp", Builtins::kConsoleTimeStamp, id,
+                          args.at(1));
++  InstallContextFunction(context, "stackTrace", Builtins::kConsoleStackTrace, id,
++                         args.at(1));
+ 
+   return *context;
+ }
+diff --git a/src/builtins/builtins-definitions.h b/src/builtins/builtins-definitions.h
+index 60f691d..4ec72b7 100644
+--- a/src/builtins/builtins-definitions.h
++++ b/src/builtins/builtins-definitions.h
+@@ -416,6 +416,7 @@ namespace internal {
+   CPP(ConsoleTimeEnd)                                                          \
+   CPP(ConsoleTimeStamp)                                                        \
+   CPP(ConsoleContext)                                                          \
++  CPP(ConsoleStackTrace)                                                       \
+                                                                                \
+   /* DataView */                                                               \
+   CPP(DataViewConstructor)                                                     \
+-- 
+2.7.1
+

@@ -1,0 +1,98 @@
+{{define "head"}}
+<script type="text/javascript">
+  $(function(){
+    $(".ui.accordion").accordion();
+  });
+</script>
+<style>
+  .ui.header+p.labels {
+    margin-top: -1rem;
+  }
+  .ui.label {
+    margin-top: 1rem;
+  }
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="ui green segment">
+  <h2>Debug</h2>
+  <div class="ui block header">
+    <i class="shield icon"></i>
+    <div class="content">
+      Active Policy
+      <div class="sub header">{{.ActivePolicy}}</div>
+    </div>
+  </div>
+  <p class="labels">
+    {{range .TestHandlers}}
+      <a class="ui label" href="{{.Path}}">{{.Path}}</a>
+    {{end}}
+  </p>
+  <div class="ui styled fluid accordion">
+    <div class="title">
+      <i class="dropdown icon"></i>
+      Flags
+    </div>
+    <div class="content">
+      <table class="ui compact celled definition table">
+        <tbody>
+          {{range $name, $value := .Flags}}
+            <tr>
+              <td>{{$name}}</td>
+              <td>{{$value}}</td>
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<h2>Analysis</h2>
+{{range  .ChromeClient.AnalyzeLogs}}
+<div class="ui blue segment">
+  <h4>
+    Page: {{.Description}}
+  </h4>
+
+  <p>
+    {{if .PolicyViolated}}
+      <span class="ui red empty circular label"></span> Policy Violated <br>
+      <table class="ui collapsing celled definition table">
+        <tbody>
+            <tr>
+              <td class="warning">API Name</td>
+              <td>{{.TaintingAPIName}}</td>
+            </tr>
+            <tr>
+              <td class="negative">Resource Type</td>
+              <td>{{.ReqResourceType}}</td>
+            </tr>
+            <tr>
+              <td class="negative">URL</td>
+              <td>{{.ReqURL}}</td>
+            </tr>
+            <tr>
+              <td class="negative">Initiator</td>
+              <td>{{.ReqInitiator}}</td>
+            </tr>
+            <tr>
+              <td class="negative">Stack</td>
+              <td>{{.ReqStackScripts}}</td>
+            </tr>
+        </tbody>
+      </table>
+    {{else}}
+      <span class="ui green empty circular label"></span> No Violation
+    {{end}}
+  </p>
+
+  <a class="ui basic primary button" href="/event_log?policy={{.PolicyId}}">
+    Logs
+  </a>
+</div>
+{{end}}
+
+
+{{end}}
